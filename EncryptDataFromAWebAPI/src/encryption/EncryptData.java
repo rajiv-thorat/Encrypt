@@ -11,11 +11,14 @@ import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -30,18 +33,14 @@ public class EncryptData {
  * 
  * @param data The string to be encrypted.
  * @param filePath The path where the encrypted data will be stored.
- * @param key The key that will be used for the encryption. 
  * @param initializationVector The initialization vector that will be used.
  * @return boolean Returns whether the encryption was successful.
  */
-  public static boolean encrypt(String data, String filePath, String key, String initializationVector) {
-	  
-
-	  
+  public static boolean encrypt(String data, String filePath, String initializationVector) {
 
     IvParameterSpec initializationVectorSpec = new IvParameterSpec(initializationVector.getBytes(
         StandardCharsets.UTF_8));
-    SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+    
 
     Cipher cipher = null;
     try {
@@ -51,10 +50,21 @@ public class EncryptData {
       return false;
     }
     
+    
+    KeyGenerator keyGenerator = null;
+	try {
+		keyGenerator = KeyGenerator.getInstance("AES");
+	} catch (NoSuchAlgorithmException e1) {
+		System.out.println("There was a problem creating the Key.");
+		return false;
+	}
+	keyGenerator.init(128);
+	SecretKey aesSecretKey = keyGenerator.generateKey();
+    
 
     try {
       //cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, initializationVectorSpec);
-      cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, initializationVectorSpec);
+      cipher.init(Cipher.ENCRYPT_MODE, aesSecretKey, initializationVectorSpec);
     } catch (InvalidAlgorithmParameterException e) {
       System.out.println("There was a problem initializing the Cipher.");
       return false;
@@ -80,7 +90,8 @@ public class EncryptData {
       return false;
     }
 
-
+    System.out.println("Keep it secret, keep it safe! " 
+    			+ Base64.getEncoder().withoutPadding().encodeToString(aesSecretKey.getEncoded()));
     return true;        
   }
 
@@ -101,8 +112,9 @@ public class EncryptData {
       return "";
     }
     IvParameterSpec initializationVectorSpec = new IvParameterSpec(initializationVector.getBytes(
-        StandardCharsets.UTF_8));
-    SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+        StandardCharsets.UTF_8));       
+    
+    SecretKey aesSecretKey = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
 
     Cipher cipher = null;
     try {
@@ -112,7 +124,7 @@ public class EncryptData {
       return "";
     }
     try {
-      cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, initializationVectorSpec);
+      cipher.init(Cipher.DECRYPT_MODE, aesSecretKey, initializationVectorSpec);
     } catch (InvalidAlgorithmParameterException e) {
       System.out.println("There was a problem initializing the cipher.");
       return "";

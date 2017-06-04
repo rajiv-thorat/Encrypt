@@ -24,9 +24,9 @@ public class Begin {
    */
   public static void main(String[] args) {
     
-    if(args.length == 5 && args[0].equals("encrypt")){
+    if(args.length == 4 && args[0].equals("encrypt")){
       String weatherInfo = getData(args[1]);      
-      if(EncryptData.encrypt(weatherInfo,args[2],args[3],args[4])){
+      if(EncryptData.encrypt(weatherInfo,args[2],args[3])){
         System.out.println("Encryption successful.");
       }
       
