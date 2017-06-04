@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -36,11 +37,8 @@ public class EncryptData {
  * @param initializationVector The initialization vector that will be used.
  * @return boolean Returns whether the encryption was successful.
  */
-  public static boolean encrypt(String data, String filePath, String initializationVector) {
+  public static boolean encrypt(String data, String filePath) {
 
-    IvParameterSpec initializationVectorSpec = new IvParameterSpec(initializationVector.getBytes(
-        StandardCharsets.UTF_8));
-    
 
     Cipher cipher = null;
     try {
@@ -61,6 +59,10 @@ public class EncryptData {
 	keyGenerator.init(128);
 	SecretKey aesSecretKey = keyGenerator.generateKey();
     
+	SecureRandom random = new SecureRandom();
+    byte bytes[] = new byte[16];
+    random.nextBytes(bytes);
+    IvParameterSpec initializationVectorSpec = new IvParameterSpec(bytes);
 
     try {
       //cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, initializationVectorSpec);
@@ -90,8 +92,10 @@ public class EncryptData {
       return false;
     }
 
-    System.out.println("Keep it secret, keep it safe! " 
-    			+ Base64.getEncoder().withoutPadding().encodeToString(aesSecretKey.getEncoded()));
+    System.out.println("Keep it secret, keep it safe! \nkey : " 
+    			+ Base64.getEncoder().withoutPadding().encodeToString(aesSecretKey.getEncoded())
+    			+ "\ninitialization vector : "
+    			+ Base64.getEncoder().withoutPadding().encodeToString(initializationVectorSpec.getIV()));
     return true;        
   }
 
@@ -111,8 +115,7 @@ public class EncryptData {
     } catch (IOException e) {
       return "";
     }
-    IvParameterSpec initializationVectorSpec = new IvParameterSpec(initializationVector.getBytes(
-        StandardCharsets.UTF_8));       
+    IvParameterSpec initializationVectorSpec = new IvParameterSpec(Base64.getDecoder().decode(initializationVector));       
     
     SecretKey aesSecretKey = new SecretKeySpec(Base64.getDecoder().decode(key), "AES");
 
