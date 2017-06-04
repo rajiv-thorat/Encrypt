@@ -33,7 +33,6 @@ public class EncryptData {
  * 
  * @param data The string to be encrypted.
  * @param filePath The path where the encrypted data will be stored.
- * @param initializationVector The initialization vector that will be used.
  * @return boolean Returns whether the encryption was successful.
  */
   public static boolean encrypt(String data, String filePath) {
